@@ -1,4 +1,4 @@
 RemiAndroid
 ===========
 
-Android version of Remi
+Preview of the Android version of FirefoxOs webapp Remi
