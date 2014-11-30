@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Remi</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_add_list">Nuova lista</string>
+    <string name="action_search">Cerca</string>
+    <string name="search_hint">Cerca Liste</string>
+    
+    <string name="dialog_positive">Modifica lista</string>
+    <string name="dialog_neutral">Annulla</string>
+    <string name="dialog_negative">Cancella lista</string>
+    <string name="delete_list_title">Conferma l\'eliminazione della lista</string>
+    
+    <string name="list_creation">Creazione nuova lista</string>
+    <string name="new_list_name">Inserisci il nome della nuova lista</string>
+    <string name="move_to_bottom">Sposta in fondo</string>
+    <string name="ab_order">Ordine alfabetico</string>
+
+</resources>
