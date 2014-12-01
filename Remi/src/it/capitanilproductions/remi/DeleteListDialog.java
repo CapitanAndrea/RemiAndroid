@@ -7,6 +7,8 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.CheckBox;
+import android.widget.EditText;
 
 public class DeleteListDialog extends DialogFragment {
 	
@@ -15,9 +17,11 @@ public class DeleteListDialog extends DialogFragment {
 		// TODO Auto-generated method stub
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 		final View textentryView=LayoutInflater.from(getActivity()).inflate(R.layout.master_dialog_layout, null);
+		((EditText)textentryView.findViewById(R.id.new_list_name)).setText(getArguments().getString("oldListName"));
+		((CheckBox)textentryView.findViewById(R.id.new_list_abo)).setChecked(getArguments().getBoolean("oldAbo"));
+		((CheckBox)textentryView.findViewById(R.id.new_list_mtb)).setChecked(getArguments().getBoolean("oldMtb"));
 		builder.setTitle(R.string.delete_list_title)
-			.setView(textentryView);
-        builder.setMessage(getArguments().getString("title"))
+			   .setView(textentryView)
                .setPositiveButton(R.string.dialog_positive, new DialogInterface.OnClickListener() {
                    public void onClick(DialogInterface dialog, int id) {
                 	   //positive button means modify list

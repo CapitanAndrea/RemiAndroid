@@ -28,6 +28,8 @@ import android.widget.Toast;
 
 public class MasterActivity extends ListActivity implements OnItemClickListener, OnItemLongClickListener, OnQueryTextListener, OnActionExpandListener {
 
+	private static final String TAG="REMI";
+	
 	SQLiteDatabase db=null;
 	SQLiteOpenHelper helper=null;
 	Cursor query;
@@ -37,6 +39,7 @@ public class MasterActivity extends ListActivity implements OnItemClickListener,
 		DBList.COLOUMN_NAME,
 		DBList.COLOUMN_TOTAL,
 		DBList.COLOUMN_CHECKED,
+		
 		DBList.COLOUMN_ID
 	};
 	private int textViewArray []={
@@ -46,6 +49,8 @@ public class MasterActivity extends ListActivity implements OnItemClickListener,
 	};
 	private ListView lw=null;
 	
+	private int selectedPosition;
+	
 //	override metodi per creazione, pausa, restore etc etc activity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +59,7 @@ public class MasterActivity extends ListActivity implements OnItemClickListener,
 //      ottengo liste e relativi meta-dati
         helper=new DBList(this);
         db=helper.getWritableDatabase();
-        query=db.query(DBList.LIST_TABLE, columnsArray, null, null, null, null, null);
+        query=db.query(DBList.LIST_TABLE, null, null, null, null, null, null);
 //      riempio la listView del layout dell'activity master
         ListAdapter adapter=new SimpleCursorAdapter(this, R.layout.master_row, query, columnsArray, textViewArray, 0);
         setListAdapter(adapter);
@@ -140,9 +145,13 @@ public class MasterActivity extends ListActivity implements OnItemClickListener,
 	@Override
 	public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
 //		long click sul nome di una lista
+		selectedPosition=position;
+		query.moveToPosition(position);
 		DialogFragment frag=new DeleteListDialog();
 		Bundle args=new Bundle();
-		args.putString("title", ((TextView)view.findViewById(R.id.rowListName)).getText().toString());
+		args.putString("oldListName", ((TextView)view.findViewById(R.id.rowListName)).getText().toString());
+		args.putBoolean("oldAbo", query.getInt(4)==1 ? true : false);
+		args.putBoolean("oldMtb", query.getInt(5)==1 ? true : false); //caricare nel dialog i vecchi valori di move to bottom e alpha-order
 		frag.setArguments(args);
 		frag.show(getFragmentManager(), "delete_list");
 		return true;
@@ -172,8 +181,6 @@ public class MasterActivity extends ListActivity implements OnItemClickListener,
 	}
 	
 	public void confirmModifyList(View dialogView) {
-		//TODO va modificato il dialog per fare in modo che appaia nome della lista e opzioni scelte nel dialog
-		//TODO la modifica non funziona per ora =(
 		final String name=((EditText)dialogView.findViewById(R.id.new_list_name)).getText().toString();
 		final boolean moveToBottom=((CheckBox)dialogView.findViewById(R.id.new_list_mtb)).isChecked();
 		final boolean abOrder=((CheckBox)dialogView.findViewById(R.id.new_list_abo)).isChecked();
@@ -181,21 +188,25 @@ public class MasterActivity extends ListActivity implements OnItemClickListener,
 		values.put(DBList.COLOUMN_NAME, name);
 		values.put(DBList.COLOUMN_MOVETOBOTTOM, (moveToBottom==true) ? 1 : 0);
 		values.put(DBList.COLOUMN_ABORDER, (abOrder==true) ? 1 : 0);
-		
-		db.update(DBList.LIST_TABLE, values, DBList.COLOUMN_NAME+"='"+name+"'", null);
+//		ottengo il nome dalla lista da cancellare dal cursor
+		query.moveToPosition(selectedPosition);
+		db.update(DBList.LIST_TABLE, values, DBList.COLOUMN_NAME+"='"+query.getString(1)+"'", null);
 		updateView(null);
 	}
 	
 	public void confirmDeleteList(String list){
 //		click positivo nel dialog per l'eliminazione di una lista
-		db.delete(DBList.LIST_TABLE, DBList.COLOUMN_NAME+"='"+list+"'", null);
+//		ottenere il nome della lista da cancellare dal cursor rende il codice più robusto
+//		nel caso in cui uno cambia il nome e poi chiede l'eliminazione
+		query.moveToPosition(selectedPosition);
+		db.delete(DBList.LIST_TABLE, DBList.COLOUMN_NAME+"='"+query.getString(0)+"'", null);
 		updateView(null);
 	}
 	
 	
 //	metodi privati di varia utilità
 	private void updateView(String selection){
-        query=db.query(DBList.LIST_TABLE, columnsArray, selection, null, null, null, null);
+        query=db.query(DBList.LIST_TABLE, null, selection, null, null, null, null);
         ListAdapter adapter=new SimpleCursorAdapter(this, R.layout.master_row, query, columnsArray, textViewArray, 0);
         setListAdapter(adapter);
 	}
@@ -203,5 +214,6 @@ public class MasterActivity extends ListActivity implements OnItemClickListener,
 
 
 }
-//TODO: Aggiungere la possibilità di modificare il nome di una lista. Dopo va aggiunta la nuova activity che gestisca una singola lista di elementi.
+//TODO: Dopo va aggiunta la nuova activity che gestisca una singola lista di elementi.
 //TODO: Sarebbe auspicabile anche fare in modo che l'ultima lista acceduta risulti la prima nella lista
+//TODO: dovrei fare in modo che le liste siano uniche
