@@ -18,9 +18,10 @@ public class DeleteListDialog extends DialogFragment {
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 		final View textentryView=LayoutInflater.from(getActivity()).inflate(R.layout.master_dialog_layout, null);
 		((EditText)textentryView.findViewById(R.id.new_list_name)).setText(getArguments().getString("oldListName"));
+		((EditText)textentryView.findViewById(R.id.new_list_name)).setHint(R.string.modify_list_hint);
 		((CheckBox)textentryView.findViewById(R.id.new_list_abo)).setChecked(getArguments().getBoolean("oldAbo"));
 		((CheckBox)textentryView.findViewById(R.id.new_list_mtb)).setChecked(getArguments().getBoolean("oldMtb"));
-		builder.setTitle(R.string.delete_list_title)
+		builder.setTitle(R.string.modify_list_title)
 			   .setView(textentryView)
                .setPositiveButton(R.string.dialog_positive, new DialogInterface.OnClickListener() {
                    public void onClick(DialogInterface dialog, int id) {

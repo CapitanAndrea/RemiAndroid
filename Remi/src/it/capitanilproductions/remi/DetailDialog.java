@@ -8,12 +8,11 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.TextView;
 
-public class MasterDialog extends DialogFragment {
+public class DetailDialog extends DialogFragment {
 	
-	public static MasterDialog newInstance(int title){
-        MasterDialog frag = new MasterDialog();
+	public static DetailDialog newInstance(int title){
+        DetailDialog frag = new DetailDialog();
         Bundle args = new Bundle();
         args.putInt("title", title);
         frag.setArguments(args);
@@ -24,8 +23,8 @@ public class MasterDialog extends DialogFragment {
 	public Dialog onCreateDialog(Bundle savedInstanceState){
 		int title = getArguments().getInt("title");
         LayoutInflater factory = LayoutInflater.from(getActivity());
-        final View textentryView=factory.inflate(R.layout.master_dialog_layout, null);
-        ((EditText)textentryView.findViewById(R.id.new_list_name)).setHint(R.string.new_list_hint);
+        final View textentryView=factory.inflate(R.layout.detail_dialog_layout, null);
+        ((EditText)textentryView.findViewById(R.id.newItemName)).setHint(R.string.new_item_hint);
         return new AlertDialog.Builder(getActivity())
         //.setIcon(R.drawable.alert_dialog_icon)
     	.setView(textentryView)
@@ -34,7 +33,7 @@ public class MasterDialog extends DialogFragment {
             new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int whichButton) {
                 	//positive button means create a new list with the given attributes
-                    ((MasterActivity)getActivity()).confirmCreateList(textentryView);
+                    ((DetailActivity)getActivity()).confirmCreateItem(textentryView);
                 }
             }
         )

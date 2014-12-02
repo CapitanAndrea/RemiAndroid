@@ -2,19 +2,28 @@
 <resources>
 
     <string name="app_name">Remi</string>
+    <string name="app_name_master">RemiMasterAcivity</string>
+    <string name="app_name_detail">RemiDetailActivity</string>
     <string name="hello_world">Hello world!</string>
+    <string name="double_list_toast">Non possono esistere liste con lo stesso nome!</string>
+    
     <string name="action_add_list">Nuova lista</string>
+    <string name="action_add_item">Nuovo oggetto</string>
     <string name="action_search">Cerca</string>
     <string name="search_hint">Cerca Liste</string>
     
-    <string name="dialog_positive">Modifica lista</string>
+    <string name="dialog_positive">Conferma modifiche</string>
     <string name="dialog_neutral">Annulla</string>
     <string name="dialog_negative">Cancella lista</string>
-    <string name="delete_list_title">Conferma l\'eliminazione della lista</string>
     
+    <string name="modify_list_title">Modifica lista</string>
+    <string name="modify_list_hint">Nuovo nome della lista</string>
     <string name="list_creation">Creazione nuova lista</string>
-    <string name="new_list_name">Inserisci il nome della nuova lista</string>
+    <string name="new_list_hint">Nome della nuova lista</string>
     <string name="move_to_bottom">Sposta in fondo</string>
     <string name="ab_order">Ordine alfabetico</string>
+    
+    
+    <string name="new_item_hint">Nuovo nome oggetto</string>
 
 </resources>

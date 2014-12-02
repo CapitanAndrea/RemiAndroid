@@ -3,6 +3,7 @@ package it.capitanilproductions.remi;
 import android.app.DialogFragment;
 import android.app.ListActivity;
 import android.content.ContentValues;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -30,16 +31,22 @@ public class MasterActivity extends ListActivity implements OnItemClickListener,
 
 	private static final String TAG="REMI";
 	
-	SQLiteDatabase db=null;
-	SQLiteOpenHelper helper=null;
-	Cursor query;
-	int dialog;
+	private SQLiteDatabase db=null;
+	private SQLiteOpenHelper helper=null;
+	private Cursor query;
+	private int dialog;
 	
+	public static final String CHOSENLIST="it.capitanilproductions.remi.LIST";
+	public static final String CHOSENLISTABORDER="it.capitanilproductions.remi.ABORDER";
+	public static final String CHOSENLISTMTBOTTOM="it.capitanilproductions.remi.MTBOTTOM";
+	
+	private String columnNameArray []={
+			DBList.COLOUMN_NAME
+	};
 	private String columnsArray []={
 		DBList.COLOUMN_NAME,
 		DBList.COLOUMN_TOTAL,
 		DBList.COLOUMN_CHECKED,
-		
 		DBList.COLOUMN_ID
 	};
 	private int textViewArray []={
@@ -91,7 +98,7 @@ public class MasterActivity extends ListActivity implements OnItemClickListener,
     		return true;
     	}
     	case R.id.action_add_list:{
-    		Toast.makeText(this, "Nuova lista creata!!", Toast.LENGTH_SHORT).show();
+//    		Toast.makeText(this, "Nuova lista creata!!", Toast.LENGTH_SHORT).show();
     		dialog=R.string.list_creation;
     		showDialog();
     		return true;
@@ -138,8 +145,12 @@ public class MasterActivity extends ListActivity implements OnItemClickListener,
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
-		// TODO click (semplice) sul nome di una lista
-		
+		Intent intent=new Intent(this, DetailActivity.class);
+		query.moveToPosition(position);
+		intent.putExtra(CHOSENLIST, query.getString(1));
+		intent.putExtra(CHOSENLISTABORDER, (query.getInt(4)==1) ? true : false);
+		intent.putExtra(CHOSENLISTMTBOTTOM, (query.getInt(5)==1) ? true : false);
+		startActivity(intent);
 	}
 	
 	@Override
@@ -160,12 +171,18 @@ public class MasterActivity extends ListActivity implements OnItemClickListener,
 //	metodi per il dialog
 	public void showDialog(){
     	DialogFragment newFragment=MasterDialog.newInstance(dialog);
-        newFragment.show(getFragmentManager(), "dialog");
+        newFragment.show(getFragmentManager(), "MasterDialog");
 	}
 
 	public void confirmCreateList(View dialogView) {
 //		click positivo nel dialog per la creazione di una nuova lista
-		final String name=((EditText)dialogView.findViewById(R.id.new_list_name)).getText().toString();
+		String name=((EditText)dialogView.findViewById(R.id.new_list_name)).getText().toString();
+		name=name.replace("'", "''");
+//		check per vedere se la lista esiste gia
+		if(db.query(DBList.LIST_TABLE, columnNameArray, DBList.COLOUMN_NAME+"='"+name+"'", null, null, null, null).getCount()!=0){
+			Toast.makeText(getApplicationContext(), R.string.double_list_toast, Toast.LENGTH_LONG).show();
+			return;
+		}
 		final boolean moveToBottom=((CheckBox)dialogView.findViewById(R.id.new_list_mtb)).isChecked();
 		final boolean abOrder=((CheckBox)dialogView.findViewById(R.id.new_list_abo)).isChecked();
 		ContentValues values=new ContentValues();
@@ -181,7 +198,12 @@ public class MasterActivity extends ListActivity implements OnItemClickListener,
 	}
 	
 	public void confirmModifyList(View dialogView) {
-		final String name=((EditText)dialogView.findViewById(R.id.new_list_name)).getText().toString();
+		String name=((EditText)dialogView.findViewById(R.id.new_list_name)).getText().toString();
+		name=name.replace("'", "''");
+		if(db.query(DBList.LIST_TABLE, columnNameArray, DBList.COLOUMN_NAME+"='"+name+"'", null, null, null, null).getCount()!=0){
+			Toast.makeText(getApplicationContext(), R.string.double_list_toast, Toast.LENGTH_LONG).show();
+			return;
+		}
 		final boolean moveToBottom=((CheckBox)dialogView.findViewById(R.id.new_list_mtb)).isChecked();
 		final boolean abOrder=((CheckBox)dialogView.findViewById(R.id.new_list_abo)).isChecked();
 		ContentValues values=new ContentValues();
@@ -199,7 +221,7 @@ public class MasterActivity extends ListActivity implements OnItemClickListener,
 //		ottenere il nome della lista da cancellare dal cursor rende il codice più robusto
 //		nel caso in cui uno cambia il nome e poi chiede l'eliminazione
 		query.moveToPosition(selectedPosition);
-		db.delete(DBList.LIST_TABLE, DBList.COLOUMN_NAME+"='"+query.getString(0)+"'", null);
+		db.delete(DBList.LIST_TABLE, DBList.COLOUMN_NAME+"='"+query.getString(1)+"'", null);
 		updateView(null);
 	}
 	
@@ -214,6 +236,7 @@ public class MasterActivity extends ListActivity implements OnItemClickListener,
 
 
 }
+//TODO: devo fare il cursor adapter custom come per la detail activity(così risolvo anche il problema degli apostrofi
 //TODO: Dopo va aggiunta la nuova activity che gestisca una singola lista di elementi.
 //TODO: Sarebbe auspicabile anche fare in modo che l'ultima lista acceduta risulti la prima nella lista
-//TODO: dovrei fare in modo che le liste siano uniche
+//TODO: dovrei fare in modo che le liste siano uniche (i nomi) -> fatto
