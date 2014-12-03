@@ -147,7 +147,7 @@ public class MasterActivity extends ListActivity implements OnItemClickListener,
 			long id) {
 		Intent intent=new Intent(this, DetailActivity.class);
 		query.moveToPosition(position);
-		intent.putExtra(CHOSENLIST, query.getString(1));
+		intent.putExtra(CHOSENLIST, query.getString(query.getColumnIndex(DBList.COLOUMN_NAME)));
 		intent.putExtra(CHOSENLISTABORDER, (query.getInt(4)==1) ? true : false);
 		intent.putExtra(CHOSENLISTMTBOTTOM, (query.getInt(5)==1) ? true : false);
 		startActivity(intent);
@@ -200,7 +200,9 @@ public class MasterActivity extends ListActivity implements OnItemClickListener,
 	public void confirmModifyList(View dialogView) {
 		String name=((EditText)dialogView.findViewById(R.id.new_list_name)).getText().toString();
 		name=name.replace("'", "''");
-		if(db.query(DBList.LIST_TABLE, columnNameArray, DBList.COLOUMN_NAME+"='"+name+"'", null, null, null, null).getCount()!=0){
+		query.moveToPosition(selectedPosition);
+		if(!query.getString(query.getColumnIndex(DBList.COLOUMN_NAME)).equals(name) &&
+			db.query(DBList.LIST_TABLE, columnNameArray, DBList.COLOUMN_NAME+"='"+name+"'", null, null, null, null).getCount()!=0){
 			Toast.makeText(getApplicationContext(), R.string.double_list_toast, Toast.LENGTH_LONG).show();
 			return;
 		}
@@ -211,7 +213,6 @@ public class MasterActivity extends ListActivity implements OnItemClickListener,
 		values.put(DBList.COLOUMN_MOVETOBOTTOM, (moveToBottom==true) ? 1 : 0);
 		values.put(DBList.COLOUMN_ABORDER, (abOrder==true) ? 1 : 0);
 //		ottengo il nome dalla lista da cancellare dal cursor
-		query.moveToPosition(selectedPosition);
 		db.update(DBList.LIST_TABLE, values, DBList.COLOUMN_NAME+"='"+query.getString(1)+"'", null);
 		updateView(null);
 	}
@@ -236,7 +237,5 @@ public class MasterActivity extends ListActivity implements OnItemClickListener,
 
 
 }
-//TODO: devo fare il cursor adapter custom come per la detail activity(così risolvo anche il problema degli apostrofi
-//TODO: Dopo va aggiunta la nuova activity che gestisca una singola lista di elementi.
+//TODO: devo fare il cursor adapter custom come per la detail activity(così risolvo anche il problema degli apostrofi)
 //TODO: Sarebbe auspicabile anche fare in modo che l'ultima lista acceduta risulti la prima nella lista
-//TODO: dovrei fare in modo che le liste siano uniche (i nomi) -> fatto
