@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
@@ -25,6 +26,7 @@ public class DetailDialog extends DialogFragment {
         LayoutInflater factory = LayoutInflater.from(getActivity());
         final View textentryView=factory.inflate(R.layout.detail_dialog_layout, null);
         ((EditText)textentryView.findViewById(R.id.newItemName)).setHint(R.string.new_item_hint);
+        Log.d("REMI", "ERRORE PESISSIMOOOO");
         return new AlertDialog.Builder(getActivity())
         //.setIcon(R.drawable.alert_dialog_icon)
     	.setView(textentryView)

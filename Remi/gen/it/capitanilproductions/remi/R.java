@@ -11,12 +11,15 @@ public final class R {
     public static final class attr {
     }
     public static final class drawable {
-        public static final int ic_add=0x7f020000;
-        public static final int ic_launcher=0x7f020001;
+        public static final int bottle=0x7f020000;
+        public static final int ic_add=0x7f020001;
+        public static final int ic_launcher=0x7f020002;
+        public static final int ic_menu_clear_playlist=0x7f020003;
     }
     public static final class id {
         public static final int action_add_list=0x7f080009;
         public static final int action_searchlist=0x7f080008;
+        public static final int clean_list=0x7f08000a;
         public static final int detailRowEntry=0x7f080001;
         public static final int itemsChecked=0x7f080006;
         public static final int newItemName=0x7f080000;
@@ -34,27 +37,31 @@ public final class R {
         public static final int master_row=0x7f030004;
     }
     public static final class menu {
-        public static final int master_activity_actions=0x7f070000;
+        public static final int detail_activity_menu=0x7f070000;
+        public static final int master_activity_actions=0x7f070001;
     }
     public static final class string {
-        public static final int ab_order=0x7f050011;
+        public static final int ab_order=0x7f050013;
         public static final int action_add_item=0x7f050006;
         public static final int action_add_list=0x7f050005;
         public static final int action_search=0x7f050007;
         public static final int app_name=0x7f050000;
         public static final int app_name_detail=0x7f050002;
         public static final int app_name_master=0x7f050001;
-        public static final int dialog_negative=0x7f05000b;
-        public static final int dialog_neutral=0x7f05000a;
-        public static final int dialog_positive=0x7f050009;
+        public static final int clean_list=0x7f050009;
+        public static final int dialog_negative=0x7f05000c;
+        public static final int dialog_negative_item=0x7f05000d;
+        public static final int dialog_neutral=0x7f05000b;
+        public static final int dialog_positive=0x7f05000a;
         public static final int double_list_toast=0x7f050004;
         public static final int hello_world=0x7f050003;
-        public static final int list_creation=0x7f05000e;
-        public static final int modify_list_hint=0x7f05000d;
-        public static final int modify_list_title=0x7f05000c;
-        public static final int move_to_bottom=0x7f050010;
-        public static final int new_item_hint=0x7f050012;
-        public static final int new_list_hint=0x7f05000f;
+        public static final int list_creation=0x7f050010;
+        public static final int modify_item_title=0x7f050015;
+        public static final int modify_list_hint=0x7f05000f;
+        public static final int modify_list_title=0x7f05000e;
+        public static final int move_to_bottom=0x7f050012;
+        public static final int new_item_hint=0x7f050014;
+        public static final int new_list_hint=0x7f050011;
         public static final int search_hint=0x7f050008;
     }
     public static final class style {
