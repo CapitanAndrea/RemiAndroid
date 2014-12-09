@@ -1,6 +1,5 @@
 package it.capitanilproductions.remi;
 
-import it.capitanilproductions.remi.R.id;
 import android.app.DialogFragment;
 import android.app.ListActivity;
 import android.content.ContentValues;
@@ -8,6 +7,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
+import android.support.v4.app.NavUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -36,7 +36,7 @@ public class DetailActivity extends ListActivity implements OnActionExpandListen
 	private Cursor query;
 	private int dialog;
 	
-	private ListView lw;
+//	private ListView lw;
 	
 	private String selection []={
 		DBList.COLOUMN_NAME,
@@ -74,11 +74,18 @@ public class DetailActivity extends ListActivity implements OnActionExpandListen
 		ListAdapter adapter=new DetailCursorAdapter(this, R.layout.detail_row, query, 0);
 		setListAdapter(adapter);
 		
-		lw=((ListView)findViewById(android.R.id.list));
+		//lw=((ListView)findViewById(android.R.id.list));
 		
 		setTitle(listName);
 		getActionBar().setDisplayHomeAsUpEnabled(true); //TODO: risolvere il bug del pulsante home che non funziona
 		
+	}
+	
+	@Override
+	protected void onDestroy() {
+//		cleanup
+		db.close();
+		super.onDestroy();
 	}
 	
 //  override metodi per creazione e gestione menu
@@ -87,7 +94,7 @@ public class DetailActivity extends ListActivity implements OnActionExpandListen
 	  	MenuInflater inflater=getMenuInflater();
 	  	inflater.inflate(R.menu.detail_activity_menu, menu);
 	  	
-	  	MenuItem searchMenuItem=menu.findItem(R.id.action_searchlist);
+	  	MenuItem searchMenuItem=menu.findItem(R.id.action_search_item);
 	  	searchMenuItem.setOnActionExpandListener(this);
 	    SearchView searchView = (SearchView) searchMenuItem.getActionView();
 	    searchView.setOnQueryTextListener(this);
@@ -99,16 +106,16 @@ public class DetailActivity extends ListActivity implements OnActionExpandListen
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
     	switch(item.getItemId()){
-    	case R.id.action_searchlist:{
+    	case R.id.action_search_item:{
     		return true;
     	}
-    	case R.id.action_add_list:{
-//    		Toast.makeText(this, "Nuova lista creata!!", Toast.LENGTH_SHORT).show();
+    	case R.id.action_add_item:{
     		dialog=R.string.list_creation;
     		showAddItemDialog();
     		return true;
     	}
     	case R.id.clean_list:{
+    		//chiedere conferma via dialog?!?!
     		query.moveToFirst();
 
     		while(!query.isAfterLast()){
@@ -123,7 +130,12 @@ public class DetailActivity extends ListActivity implements OnActionExpandListen
     	updateView("Clean list");
     	return true;
     	}
+    	case android.R.id.home:{
+    		NavUtils.navigateUpFromSameTask(this);
+    		return true;
+    	}
     	default:{
+    		
     		Toast.makeText(this, "Bottone sconosciuto pigiato", Toast.LENGTH_LONG).show();
     		
     		return false;
@@ -182,7 +194,9 @@ public class DetailActivity extends ListActivity implements OnActionExpandListen
 		values.put(DBList.COLOUMN_LIST, listName);
 		if(db.query(DBList.ITEM_TABLE, columnNameArray, DBList.COLOUMN_NAME+"='"+name+"' AND "+baseSelection, null, null, null, null).getCount()!=0){
 			db.update(DBList.ITEM_TABLE, values, DBList.COLOUMN_NAME+"='"+name+"' AND "+baseSelection, null);
-		} else db.insert(DBList.ITEM_TABLE, null, values);
+		} else{
+			db.insert(DBList.ITEM_TABLE, null, values);
+		}
 		updateView("confirmCreateItem");
 	}
 	
@@ -253,24 +267,27 @@ public class DetailActivity extends ListActivity implements OnActionExpandListen
 
 	public void onItemLongClick(View v) {
 		// TODO Auto-generated method stub
-//		mostra dialog
+
 		
 	}
 
 }
 
 //TODO togliere il campo posizione nella tabella degli elementi (e i campi elementi totali ed elementi fatti nella tabella delle liste)
-//TODO aggiungere la possibilità di tornare indietro
-
-/* Done list:
-	done items text is now strikethrough and gray
-	il nome della lista scelta viene visualizzato come titolo nella action bar della detail activity
-	implementate le seguenti gestures:
-		tap singolo -> cambia segno all'elemento
-		swipe (entrambe le direzioni) -> cambia segno all'elemento
-		double tap -> modifica nome elemento
-	eliminazione degli elementi della lista mediante "pulisci"
+//TODO l'ordinamento funziona male: le lettere maiuscole vengono prima delle minuscole
+//TODO forse è meglio togliere da subito il database e salvare gli elementi in maniera diversa
 
 
-
+/** Done list:
+	bugfix: detail activity menu items had wrong titles
+	add: database is now closed when the activity is destroyed or stopped
+	add: icons for alphabetical order and move to bottom options shown in master activity
+	bugfix: clicking on up button in detail activity now properly returns to master activity
+	add: remi icon is now shown
+	add: when a list has an option active now a small icon is showed in the master activity
+	change: lists are no more stored in a sqlite database table and are now stored in a file using JSON encoding
+	add: now the last clicked list will be moved on top of the view
+	add: master activity has now a custom array adapter
+	bugfix: now list names can contain apostophes or any others symboles
+	
  */

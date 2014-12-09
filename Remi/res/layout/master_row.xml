@@ -28,5 +28,23 @@
         android:layout_toRightOf="@+id/itemsChecked"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:textColor="@android:color/black" />
+
+    <ImageView
+        android:id="@+id/mtbIcon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:contentDescription="@string/mtb_icon_description"
+        android:src="@drawable/ic_mtb" />
+    
+    <ImageView
+        android:id="@+id/aboIcon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toLeftOf="@+id/mtbIcon"
+        android:layout_alignParentTop="true"
+        android:contentDescription="@string/abo_icon_description"
+        android:src="@drawable/ic_abo" />
     
 </RelativeLayout>

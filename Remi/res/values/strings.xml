@@ -29,5 +29,8 @@
     <string name="new_item_hint">Ricorda il latte</string>
     <string name="modify_item_title">Modifica nome elemento</string>
     
+    <string name="mtb_icon_description">Sposta in fondo</string>
+    <string name="abo_icon_description">Ordine alfabetico</string>
+    
 
 </resources>

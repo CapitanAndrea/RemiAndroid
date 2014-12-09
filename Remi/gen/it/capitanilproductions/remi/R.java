@@ -12,16 +12,22 @@ public final class R {
     }
     public static final class drawable {
         public static final int bottle=0x7f020000;
-        public static final int ic_add=0x7f020001;
-        public static final int ic_launcher=0x7f020002;
-        public static final int ic_menu_clear_playlist=0x7f020003;
+        public static final int ic_abo=0x7f020001;
+        public static final int ic_add=0x7f020002;
+        public static final int ic_launcher=0x7f020003;
+        public static final int ic_menu_clear_playlist=0x7f020004;
+        public static final int ic_mtb=0x7f020005;
     }
     public static final class id {
-        public static final int action_add_list=0x7f080009;
-        public static final int action_searchlist=0x7f080008;
-        public static final int clean_list=0x7f08000a;
+        public static final int aboIcon=0x7f080009;
+        public static final int action_add_item=0x7f08000b;
+        public static final int action_add_list=0x7f08000e;
+        public static final int action_search_item=0x7f08000a;
+        public static final int action_searchlist=0x7f08000d;
+        public static final int clean_list=0x7f08000c;
         public static final int detailRowEntry=0x7f080001;
         public static final int itemsChecked=0x7f080006;
+        public static final int mtbIcon=0x7f080008;
         public static final int newItemName=0x7f080000;
         public static final int new_list_abo=0x7f080004;
         public static final int new_list_mtb=0x7f080002;
@@ -42,6 +48,7 @@ public final class R {
     }
     public static final class string {
         public static final int ab_order=0x7f050013;
+        public static final int abo_icon_description=0x7f050017;
         public static final int action_add_item=0x7f050006;
         public static final int action_add_list=0x7f050005;
         public static final int action_search=0x7f050007;
@@ -60,6 +67,7 @@ public final class R {
         public static final int modify_list_hint=0x7f05000f;
         public static final int modify_list_title=0x7f05000e;
         public static final int move_to_bottom=0x7f050012;
+        public static final int mtb_icon_description=0x7f050016;
         public static final int new_item_hint=0x7f050014;
         public static final int new_list_hint=0x7f050011;
         public static final int search_hint=0x7f050008;
