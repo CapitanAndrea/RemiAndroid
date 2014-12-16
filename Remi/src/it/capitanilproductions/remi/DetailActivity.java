@@ -1,19 +1,36 @@
 package it.capitanilproductions.remi;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
 import android.app.DialogFragment;
 import android.app.ListActivity;
-import android.content.ContentValues;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
+import android.util.JsonReader;
+import android.util.JsonWriter;
 import android.util.Log;
+import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MenuItem.OnActionExpandListener;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.AbsListView.MultiChoiceModeListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListAdapter;
@@ -23,70 +40,162 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.SearchView.OnQueryTextListener;
 
-public class DetailActivity extends ListActivity implements OnActionExpandListener, OnQueryTextListener {
+public class DetailActivity extends ListActivity implements OnActionExpandListener, OnQueryTextListener, OnItemClickListener, /*OnItemLongClickListener,*/ OnClickListener, MultiChoiceModeListener {
 	
-	private static final String TAG="REMI";
+	private static final String TAG="REMI-DETAIL";
+
+	private static final String ITEMNAME="ItemName";
+	private static final String ITEMCHECK="ItemCheck";
 	
 	private static String listName;
 	private static boolean listABOrder;
 	private static boolean listMTBottom;
+	
+	private ArrayList<RemiItem> items;
+	private ArrayList<RemiItem> queriedItems=new ArrayList<RemiItem>();
+	
+	private int selectedPosition;
+//	private int dialog;
+	
+	private ListView lw;
 
-	private SQLiteDatabase db=null;
-	private SQLiteOpenHelper helper=null;
-	private Cursor query;
-	private int dialog;
-	
-//	private ListView lw;
-	
-	private String selection []={
-		DBList.COLOUMN_NAME,
-		DBList.COLOUMN_IS_CHECKED,
-		DBList.COLOUMN_ID
-	};
-	
-	private String columnNameArray []={
-			DBList.COLOUMN_NAME
-	};
-	
 	public View gesturedView;
 	
 	private String search;
-	private String baseSelection;
-	private String ordering;
+	
+	Intent result;
+	private int checkCount=0;
+	private int totalCount=0;
+	
+	private Comparator<RemiItem> comparator;
+	
+	public ActionMode mActionMode; 
+	private boolean[] deletingItems=null;
+	private int selected=0;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		result=new Intent();
 		setContentView(R.layout.activity_master);
 //		retreiving values from intent
 		Bundle extras=getIntent().getExtras();
 		listName=extras.getString(MasterActivity.CHOSENLIST);
-		if(listName==null) onDestroy(); //if no list name is passed to this activity it commits suicide
+		if(listName==null) finish(); //if no list name is passed to this activity it commits suicide
 		listABOrder=extras.getBoolean(MasterActivity.CHOSENLISTABORDER);
 		listMTBottom=extras.getBoolean(MasterActivity.CHOSENLISTMTBOTTOM);
-		ordering=orderByClause(listABOrder, listMTBottom);
-//		database opening
-		helper=new DBList(this);
-		db=helper.getWritableDatabase();
-		baseSelection=DBList.COLOUMN_LIST+"='"+listName+"'";
-		query=db.query(DBList.ITEM_TABLE, null, baseSelection, null, null, null, ordering);
+		comparator=new ItemComparator(listMTBottom, listABOrder);
 		
-		ListAdapter adapter=new DetailCursorAdapter(this, R.layout.detail_row, query, 0);
-		setListAdapter(adapter);
+        items=new ArrayList<RemiItem>();
+        JsonReader reader=null;
+        try{
+	        InputStreamReader buf = new InputStreamReader(new FileInputStream(this.getFilesDir().getPath().toString()+"/"+listName));
+	        reader=new JsonReader(new BufferedReader(buf));
+//	        Log.d(TAG, "Begin loading data...");
+			reader.beginArray();
+	        while(reader.hasNext()){
+	        	RemiItem nextItem=readNextItem(reader);
+	        	if(nextItem!=null){
+	        		items.add(nextItem);
+	        		totalCount++;
+	        		if(nextItem.check) checkCount++;
+	        	}
+//	        	Log.d(TAG, "Just read an item: "+nextItem);
+	        }
+	        reader.endArray();
+	        reader.close();
+//	        Log.d(TAG, "All items succesfully read");
+        } catch(Exception e){
+        	try {
+        		Log.d(TAG, "Loading failed...", e);
+				if(reader!=null) reader.close();
+			} catch (IOException e1) {
+				Toast.makeText(this, "Items loading critical error, report to developer!!", Toast.LENGTH_SHORT).show();
+			}
+        }
+        
+
+        updateView("onCreate");
 		
-		//lw=((ListView)findViewById(android.R.id.list));
+		lw=((ListView)findViewById(android.R.id.list));
+		lw.setOnItemClickListener(this);
+//		lw.setOnItemLongClickListener(this);
+		lw.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+		lw.setMultiChoiceModeListener(this);
 		
 		setTitle(listName);
-		getActionBar().setDisplayHomeAsUpEnabled(true); //TODO: risolvere il bug del pulsante home che non funziona
+		getActionBar().setDisplayHomeAsUpEnabled(true);
 		
 	}
 	
-	@Override
-	protected void onDestroy() {
-//		cleanup
-		db.close();
-		super.onDestroy();
+	private RemiItem readNextItem(JsonReader reader) {
+		String itemName=null;
+		boolean itemCheck=false;
+		
+		try{
+			reader.beginObject();
+			while(reader.hasNext()){
+				String key=reader.nextName();
+				switch(key){
+				case ITEMNAME:{
+					itemName=reader.nextString();
+					break;
+				}
+				case ITEMCHECK:{
+					itemCheck=reader.nextBoolean();
+					break;
+				}
+				}
+			}
+			reader.endObject();
+		}catch(Exception e){
+			return null;
+		}
+		return new RemiItem(itemName, itemCheck);
 	}
+
+@Override
+protected void onPause() {
+	super.onPause();
+
+//	Log.d(TAG, "onPause");
+    File metadata=new File(this.getFilesDir(), listName);
+    try {
+		metadata.createNewFile();
+	} catch (IOException e1) {
+		e1.printStackTrace();
+	}
+    
+    JsonWriter writer=null;
+    try{
+        BufferedOutputStream buf = new BufferedOutputStream(new FileOutputStream(this.getFilesDir().getPath().toString()+"/"+listName));
+        writer=new JsonWriter(new OutputStreamWriter(buf, "UTF-8"));
+        
+        writer.beginArray();
+//        Log.d(TAG, "Start writing data... may take some time");
+        for(RemiItem currentItem:items){
+//        	Log.d(TAG, "writing: "+currentItem.toString());
+        	writer.beginObject();
+        	writer.name(ITEMNAME).value(currentItem.name);
+        	writer.name(ITEMCHECK).value(currentItem.check);
+        	writer.endObject();
+//        	Log.d(TAG, "Object succesfully wrote");
+            writer.flush(); //needed to flush because the jsonArray closed before any byte was written
+        }
+        writer.endArray();
+        writer.flush();
+//        Log.d(TAG, "All data succesfully stored!!");
+    }catch (Exception e){
+    	Log.d(TAG, "Issues saving data", e);
+    	try {
+			if(writer!=null) writer.close();
+		} catch (IOException e1) {
+		}
+    }
+//    set result
+
+
+}
 	
 //  override metodi per creazione e gestione menu
 	@Override
@@ -110,34 +219,35 @@ public class DetailActivity extends ListActivity implements OnActionExpandListen
     		return true;
     	}
     	case R.id.action_add_item:{
-    		dialog=R.string.list_creation;
+//    		dialog=R.string.list_creation;
     		showAddItemDialog();
     		return true;
     	}
     	case R.id.clean_list:{
-    		//chiedere conferma via dialog?!?!
-    		query.moveToFirst();
-
-    		while(!query.isAfterLast()){
-    			Log.d(TAG, DBList.COLOUMN_NAME+"='"+query.getString(query.getColumnIndex(DBList.COLOUMN_NAME))+"' AND "+baseSelection);
-    			if(query.getInt(query.getColumnIndex(DBList.COLOUMN_IS_CHECKED))==1){
-    				db.delete(DBList.ITEM_TABLE,
-    						DBList.COLOUMN_NAME+"='"+query.getString(query.getColumnIndex(DBList.COLOUMN_NAME))+"' AND "+baseSelection,
-    						null);
+    		Iterator<RemiItem> iterator=items.iterator();
+    		while(iterator.hasNext()){
+    			RemiItem currItem=iterator.next();
+    			if(currItem.check==true){
+    				iterator.remove();
+    				totalCount--;
     			}
-    			query.moveToNext();
     		}
-    	updateView("Clean list");
-    	return true;
+    		checkCount=0;
+    		result.putExtra(MasterActivity.RETURNEDCHECKEDITEMS, checkCount);
+    		result.putExtra(MasterActivity.RETURNEDTOTALITEMS, totalCount);
+    		setResult(RESULT_OK, result);
+	    	updateView("Clean list");
+	    	return true;
     	}
     	case android.R.id.home:{
+        	result.putExtra(MasterActivity.RETURNEDCHECKEDITEMS, checkCount);
+        	result.putExtra(MasterActivity.RETURNEDTOTALITEMS, totalCount);
+        	setResult(RESULT_OK, result);
     		NavUtils.navigateUpFromSameTask(this);
     		return true;
     	}
     	default:{
-    		
     		Toast.makeText(this, "Bottone sconosciuto pigiato", Toast.LENGTH_LONG).show();
-    		
     		return false;
     	}
     	}
@@ -152,7 +262,7 @@ public class DetailActivity extends ListActivity implements OnActionExpandListen
 	@Override
 	public boolean onQueryTextChange(String newText) {
 		//per ogni nuova ricerca ricarico le liste che matchano
-		if(!newText.isEmpty()) search=DBList.COLOUMN_NAME+" LIKE '"+newText+"%'";
+		if(!newText.isEmpty()) search=newText;
 		else search=null;
 		updateView("onQueryTextChange");
 		return true;
@@ -166,7 +276,7 @@ public class DetailActivity extends ListActivity implements OnActionExpandListen
 	@Override
 	public boolean onMenuItemActionCollapse(MenuItem item) {
 //		quando la serachview collassa faccio ricaricare tutte le liste
-		if(item.getItemId()==R.id.action_searchlist){
+		if(item.getItemId()==R.id.action_search_item){
 			search=null;
 			updateView("onMenuItemActionCollapse");
 		}
@@ -181,22 +291,22 @@ public class DetailActivity extends ListActivity implements OnActionExpandListen
 	
 	public void showModifyItemDialog(){
 		String itemName=((TextView)gesturedView.findViewById(R.id.detailRowEntry)).getText().toString();
-		DialogFragment modifyDialog=ModifyItemDialog.newInstance(R.string.modify_item_title, itemName);
+		DialogFragment modifyDialog=ModifyItemDialog.newInstance(itemName);
 		modifyDialog.show(getFragmentManager(), "DetailFragment");
 	}
 	
 	public void confirmCreateItem(View textentryView) {
 		String name=((EditText)textentryView.findViewById(R.id.newItemName)).getText().toString();
-		name=name.replace("'", "''");
-		ContentValues values=new ContentValues();
-		values.put(DBList.COLOUMN_NAME, name);
-		values.put(DBList.COLOUMN_IS_CHECKED, 0);
-		values.put(DBList.COLOUMN_LIST, listName);
-		if(db.query(DBList.ITEM_TABLE, columnNameArray, DBList.COLOUMN_NAME+"='"+name+"' AND "+baseSelection, null, null, null, null).getCount()!=0){
-			db.update(DBList.ITEM_TABLE, values, DBList.COLOUMN_NAME+"='"+name+"' AND "+baseSelection, null);
-		} else{
-			db.insert(DBList.ITEM_TABLE, null, values);
+		for(RemiItem currItem:items){
+			if(currItem.name.compareTo(name)==0){
+				currItem.check=false;
+				checkCount--;
+				updateView("confirmCreateItem");
+				return;
+			}
 		}
+		items.add(new RemiItem(name));
+		totalCount++;
 		updateView("confirmCreateItem");
 	}
 	
@@ -204,90 +314,169 @@ public class DetailActivity extends ListActivity implements OnActionExpandListen
 	
 //	metodi privati di varia utilità
 	private void updateView(String from){
-		if (search==null) search=baseSelection;
-		else search=search+" AND "+baseSelection;
-        query=db.query(DBList.ITEM_TABLE, null, search, null, null, null, ordering);
-        
-        ListAdapter adapter=new DetailCursorAdapter(this, R.layout.detail_row, query, 0);
+//		if there is a text in the query
+		Log.d(TAG, "from: "+from+" search: "+search);
+		Collections.sort(items, comparator);
+		queriedItems.clear();
+		if(search!=null){
+			for(RemiItem currItem: items){
+//				Log.d(TAG, "Checking list "+currItem.name);
+//				add in queriedLists each lists whose name contains the query text
+				if(currItem.name.contains(search)){
+					queriedItems.add(currItem);
+//					Log.d(TAG, currList.name);
+				}
+			}
+		} else {
+			queriedItems.addAll(items);
+		}
+        ListAdapter adapter=new DetailArrayAdapter(this, R.layout.detail_row, queriedItems);
         setListAdapter(adapter);
+        
+    	result.putExtra(MasterActivity.RETURNEDCHECKEDITEMS, checkCount);
+    	result.putExtra(MasterActivity.RETURNEDTOTALITEMS, totalCount);
+    	setResult(RESULT_OK, result);
         
 //        Log.e(TAG, from);
 	}
 
-	private String orderByClause(boolean abOrder, boolean mtBottom){
-		String clause=null;
-		if(mtBottom){ //mtBottom enabled
-			clause=DBList.COLOUMN_IS_CHECKED;
-			if(abOrder) clause=clause+","+DBList.COLOUMN_NAME;
-		} else{ //mtBottom disabled
-			if(abOrder) clause=DBList.COLOUMN_NAME;
+	@Override
+	public void onItemClick(AdapterView<?> parent, View view, int position,	long id) {
+		Log.d(TAG, "list click");
+		String clickedItemName=((TextView)view.findViewById(R.id.detailRowEntry)).getText().toString();
+		for(RemiItem currentItem:queriedItems){
+			if(currentItem.name.compareTo(clickedItemName)==0){
+				if(currentItem.check) checkCount--;
+				else checkCount++;
+				currentItem.check=!currentItem.check;
+				updateView("onItemClick");
+				return;
+			}
 		}
-		return clause;
-	}
-
-	public void onItemClick(View view) {
-		View selectedView= view==null? gesturedView : view;
-		CheckBox item=(CheckBox)selectedView.findViewById(R.id.detailRowEntry);
-		ContentValues values=new ContentValues();
-//		with the introduction of gestures the checkbox no more updates itself,
-//		therefore if the element was unchecked it has to be stored as checked
-//		to be properly shown as "done" when the UI updates
-		values.put(DBList.COLOUMN_IS_CHECKED, item.isChecked()==false ? 1 : 0);
-		String clause=baseSelection+" AND "+DBList.COLOUMN_NAME+"='"+item.getText().toString()+"'";
-		db.update(DBList.ITEM_TABLE, values, clause, null);
-		updateView("onItemClick");
 	}
 
 	public void confirmModifyItem(View textentryView) {
 		String newName=((EditText)textentryView.findViewById(R.id.newItemName)).getText().toString();
-		newName=newName.replace("'", "''");
-		String oldName=((TextView)gesturedView.findViewById(R.id.detailRowEntry)).getText().toString();
-		oldName=oldName.replace("'", "''");
+		RemiItem oldItem=queriedItems.get(selectedPosition);
+		String oldName=oldItem.name;
 //		chech if there is an item in the items db with the same name
-		if(db.query(DBList.ITEM_TABLE, columnNameArray, DBList.COLOUMN_NAME+"='"+newName+"' AND "+baseSelection, null, null, null, null).getCount()!=0){
-//			check if the item in the items db is itself
-			if(newName!=oldName){
-//				if not i delete oldName item from items db
-				db.delete(DBList.ITEM_TABLE, DBList.COLOUMN_NAME+"='"+oldName+"' AND "+baseSelection, null);
+		for(RemiItem currItem:items){
+			if(currItem.name.compareTo(newName)==0){
+//				check if the item in the items db is itself
+				if(newName.compareTo(oldName)!=0){
+//					if not i delete oldName item from items db
+//					queriedItems.remove(selectedPosition);
+					items.remove(oldItem);
+					totalCount--;
+				}
+//				both cases the newName item will be set as unchecked
+				if(currItem.check){
+					currItem.check=false;
+					checkCount--;
+				}
+				updateView("ItemModify");
+				return;
 			}
-//			both cases the newName item will be set as unchecked
-			ContentValues values=new ContentValues();
-			values.put(DBList.COLOUMN_IS_CHECKED, 0);
-			db.update(DBList.COLOUMN_NAME, values, DBList.COLOUMN_NAME+"='"+newName+"' AND "+baseSelection, null);
 		}
-//		updates item name and set it unchecked
-		ContentValues values=new ContentValues();
-		values.put(DBList.COLOUMN_NAME, newName);
-		values.put(DBList.COLOUMN_IS_CHECKED, 0);
-//		ottengo il nome dalla lista da cancellare dal cursor
-		db.update(DBList.ITEM_TABLE, values, DBList.COLOUMN_NAME+"='"+oldName+"' AND "+baseSelection, null);
-		updateView("cnfirmModifyItem");
+//		if no item with newName was found update oldItem name and set it unchecked
+		oldItem.name=newName;
+		oldItem.check=false;
+		updateView("ItemModify");
+	}
+
+	/*@Override
+	public boolean onItemLongClick(AdapterView<?> parent, View view, int position,	long id) {
+//		temporarily opens the modify item dialog
+		selectedPosition=position;
+		DialogFragment frag=ModifyItemDialog.newInstance(items.get(selectedPosition).name);
+		frag.show(getFragmentManager(), "modify_item");
+		return true;
+	}*/
+
+
+	@Override
+	public void onClick(View v) {
+//		Log.d(TAG, "view click");
+		String clickedItemName=((CheckBox)v.findViewById(R.id.detailRowEntry)).getText().toString();
+		for(RemiItem currentItem:queriedItems){
+			if(currentItem.name.compareTo(clickedItemName)==0){
+				if(currentItem.check) checkCount--;
+				else checkCount++;
+				currentItem.check=!currentItem.check;
+				updateView("onItemClick");
+				return;
+			}
+		}		
+	}
+
+	@Override
+	public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+	  	MenuInflater inflater=getMenuInflater();
+	  	inflater.inflate(R.menu.detail_cab_menu, menu);
+	  	int size=queriedItems.size();
+	  	if(deletingItems==null) deletingItems=new boolean[size];
+	  	for(int i=0; i<size; i++) deletingItems[i]=false;
+		return true;
+	}
+
+	@Override
+	public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+		return false;
+	}
+
+	@Override
+	public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+		switch(item.getItemId()){
+		case R.id.cab_delete:{
+//			cancella elementi spuntati
+			int size=deletingItems.length;
+			for(int i=0; i<size; i++){
+				if(deletingItems[i]) items.remove(queriedItems.get(i));
+			}
+			mode.finish();
+			updateView("ContextualActionBar");
+			return true;
+		}
+		default:{
+			return false;
+		}
+		}
+	}
+
+	@Override
+	public void onDestroyActionMode(ActionMode mode) {
+		mActionMode=null;
 		
 	}
 
-	public void onItemLongClick(View v) {
-		// TODO Auto-generated method stub
-
-		
+	@Override
+	public void onItemCheckedStateChanged(ActionMode mode, int position,
+			long id, boolean checked) {
+		deletingItems[position]=!deletingItems[position];
+		if(checked) selected++;
+		else selected--;
+		String subtitle=Integer.toString(selected)+
+				" "+
+				getResources().getString(R.string.cab_subtitle_selected);
+		mode.setSubtitle(subtitle);
 	}
+
+//	TODO: find a way to modify an item name, maybe through a button in the detail row that makes the textview editable
 
 }
 
-//TODO togliere il campo posizione nella tabella degli elementi (e i campi elementi totali ed elementi fatti nella tabella delle liste)
-//TODO l'ordinamento funziona male: le lettere maiuscole vengono prima delle minuscole
-//TODO forse è meglio togliere da subito il database e salvare gli elementi in maniera diversa
-
 
 /** Done list:
-	bugfix: detail activity menu items had wrong titles
-	add: database is now closed when the activity is destroyed or stopped
-	add: icons for alphabetical order and move to bottom options shown in master activity
-	bugfix: clicking on up button in detail activity now properly returns to master activity
-	add: remi icon is now shown
-	add: when a list has an option active now a small icon is showed in the master activity
-	change: lists are no more stored in a sqlite database table and are now stored in a file using JSON encoding
-	add: now the last clicked list will be moved on top of the view
-	add: master activity has now a custom array adapter
-	bugfix: now list names can contain apostophes or any others symboles
+	bugfix: list deletes and modifications now affect the correct list
+	change: items are now stored as json
+	add: now each master view row shows the number of items done and total items for each list
+	change: icons for list options are now BIGGER
+	change: mtb icon is now somewhat similar to other "list-like" android icons
+	add: export data to external storage and import data from external storage
+	change: a little engineering in master activity code concerning loading and storing data
+	change: detail row is now composed by a textView (item name) and and imageView (item check)
+	add: creating a new list now automatically opens it
+	change: long click on an item now starts the contextual action bar, letting the user select groups of items via single click and delete the selected items via a button in the action bar (on top right of the screen)
+	
 	
  */

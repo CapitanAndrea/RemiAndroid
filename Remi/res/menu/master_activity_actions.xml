@@ -12,5 +12,13 @@
         android:title="@string/action_add_list"
         android:icon="@android:drawable/ic_menu_add"
         android:showAsAction="ifRoom" />
+    
+    <item android:id="@+id/export_data"
+        android:title="@string/export_data"
+        android:showAsAction="never" />
+    
+    <item android:id="@+id/import_data"
+        android:title="@string/import_data"
+        android:showAsAction="never" />
 
 </menu>

@@ -21,7 +21,7 @@ public class ItemGestureListener extends SimpleOnGestureListener {
 	@Override
 	public boolean onSingleTapConfirmed(MotionEvent e) {
 //		Log.d("REMI", "Single tap detected: "+e.toString());
-		activity.onItemClick(null);
+//		activity.onItemClick(null);
 		return true;
 	}
 	
@@ -29,7 +29,7 @@ public class ItemGestureListener extends SimpleOnGestureListener {
 	public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
 			float velocityY) {
 //		Log.d("REMI", "Fling detected: "+e1.toString()+e2.toString());
-		activity.onItemClick(null);
+//		activity.onItemClick(null);
 		return true;
 	}
 	

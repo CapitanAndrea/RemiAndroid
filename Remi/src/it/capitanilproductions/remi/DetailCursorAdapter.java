@@ -57,13 +57,13 @@ public class DetailCursorAdapter extends ResourceCursorAdapter implements OnClic
 
 	@Override
 	public void onClick(View v) {
-		listener.onItemClick(v);
+//		listener.onItemClick(v);
 		
 	}
 
 	@Override
 	public boolean onLongClick(View v) {
-		listener.onItemLongClick(v);
+//		listener.onItemLongClick(v);
 		return false;
 	}
 

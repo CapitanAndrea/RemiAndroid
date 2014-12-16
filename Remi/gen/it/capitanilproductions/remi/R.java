@@ -19,21 +19,25 @@ public final class R {
         public static final int ic_mtb=0x7f020005;
     }
     public static final class id {
-        public static final int aboIcon=0x7f080009;
-        public static final int action_add_item=0x7f08000b;
-        public static final int action_add_list=0x7f08000e;
-        public static final int action_search_item=0x7f08000a;
-        public static final int action_searchlist=0x7f08000d;
-        public static final int clean_list=0x7f08000c;
+        public static final int aboIcon=0x7f08000a;
+        public static final int action_add_item=0x7f08000c;
+        public static final int action_add_list=0x7f080010;
+        public static final int action_search_item=0x7f08000b;
+        public static final int action_searchlist=0x7f08000f;
+        public static final int cab_delete=0x7f08000e;
+        public static final int clean_list=0x7f08000d;
+        public static final int detailCheck=0x7f080002;
         public static final int detailRowEntry=0x7f080001;
-        public static final int itemsChecked=0x7f080006;
-        public static final int mtbIcon=0x7f080008;
+        public static final int export_data=0x7f080011;
+        public static final int import_data=0x7f080012;
+        public static final int itemsChecked=0x7f080007;
+        public static final int mtbIcon=0x7f080009;
         public static final int newItemName=0x7f080000;
-        public static final int new_list_abo=0x7f080004;
-        public static final int new_list_mtb=0x7f080002;
-        public static final int new_list_name=0x7f080003;
-        public static final int rowListName=0x7f080005;
-        public static final int totalItems=0x7f080007;
+        public static final int new_list_abo=0x7f080005;
+        public static final int new_list_mtb=0x7f080003;
+        public static final int new_list_name=0x7f080004;
+        public static final int rowListName=0x7f080006;
+        public static final int totalItems=0x7f080008;
     }
     public static final class layout {
         public static final int activity_master=0x7f030000;
@@ -44,32 +48,38 @@ public final class R {
     }
     public static final class menu {
         public static final int detail_activity_menu=0x7f070000;
-        public static final int master_activity_actions=0x7f070001;
+        public static final int detail_cab_menu=0x7f070001;
+        public static final int master_activity_actions=0x7f070002;
     }
     public static final class string {
-        public static final int ab_order=0x7f050013;
-        public static final int abo_icon_description=0x7f050017;
+        public static final int ab_order=0x7f050017;
+        public static final int abo_icon_description=0x7f05001b;
         public static final int action_add_item=0x7f050006;
         public static final int action_add_list=0x7f050005;
         public static final int action_search=0x7f050007;
         public static final int app_name=0x7f050000;
         public static final int app_name_detail=0x7f050002;
         public static final int app_name_master=0x7f050001;
+        public static final int cab_delete_title=0x7f05000c;
+        public static final int cab_subtitle_selected=0x7f05000d;
+        public static final int check_icon_description=0x7f05001c;
         public static final int clean_list=0x7f050009;
-        public static final int dialog_negative=0x7f05000c;
-        public static final int dialog_negative_item=0x7f05000d;
-        public static final int dialog_neutral=0x7f05000b;
-        public static final int dialog_positive=0x7f05000a;
+        public static final int dialog_negative=0x7f050010;
+        public static final int dialog_negative_item=0x7f050011;
+        public static final int dialog_neutral=0x7f05000f;
+        public static final int dialog_positive=0x7f05000e;
         public static final int double_list_toast=0x7f050004;
+        public static final int export_data=0x7f05000a;
         public static final int hello_world=0x7f050003;
-        public static final int list_creation=0x7f050010;
-        public static final int modify_item_title=0x7f050015;
-        public static final int modify_list_hint=0x7f05000f;
-        public static final int modify_list_title=0x7f05000e;
-        public static final int move_to_bottom=0x7f050012;
-        public static final int mtb_icon_description=0x7f050016;
-        public static final int new_item_hint=0x7f050014;
-        public static final int new_list_hint=0x7f050011;
+        public static final int import_data=0x7f05000b;
+        public static final int list_creation=0x7f050014;
+        public static final int modify_item_title=0x7f050019;
+        public static final int modify_list_hint=0x7f050013;
+        public static final int modify_list_title=0x7f050012;
+        public static final int move_to_bottom=0x7f050016;
+        public static final int mtb_icon_description=0x7f05001a;
+        public static final int new_item_hint=0x7f050018;
+        public static final int new_list_hint=0x7f050015;
         public static final int search_hint=0x7f050008;
     }
     public static final class style {

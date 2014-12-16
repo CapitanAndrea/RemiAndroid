@@ -12,13 +12,10 @@ import android.widget.EditText;
 
 public class ModifyItemDialog extends DialogFragment {
 	
-	private static String oldName;
-	
-	public static DialogFragment newInstance(int title, String itemName){
-		oldName=itemName;
+	public static DialogFragment newInstance(String itemName){
         ModifyItemDialog frag = new ModifyItemDialog();
         Bundle args = new Bundle();
-        args.putInt("title", title);
+        args.putString("oldName", itemName);
         frag.setArguments(args);
         return frag;
 	}
@@ -28,7 +25,7 @@ public class ModifyItemDialog extends DialogFragment {
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 		final View textentryView=LayoutInflater.from(getActivity()).inflate(R.layout.detail_dialog_layout, null);
 		((EditText)textentryView.findViewById(R.id.newItemName)).setHint(getResources().getString(R.string.new_item_hint));
-		((EditText)textentryView.findViewById(R.id.newItemName)).setText(oldName);
+		((EditText)textentryView.findViewById(R.id.newItemName)).setText(getArguments().getString("oldName"));
 		builder.setView(textentryView)
 			.setTitle(R.string.modify_item_title)
 			.setPositiveButton(R.string.dialog_positive, new DialogInterface.OnClickListener() {

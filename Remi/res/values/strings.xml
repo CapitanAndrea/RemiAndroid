@@ -12,6 +12,10 @@
     <string name="action_search">Cerca</string>
     <string name="search_hint">Cerca Liste</string>
     <string name="clean_list">Pulisci lista</string>
+    <string name="export_data">Esporta dati</string>
+    <string name="import_data">Importa dati</string>
+    <string name="cab_delete_title">Cancella elementi</string>
+    <string name="cab_subtitle_selected">Selezionati</string>
     
     <string name="dialog_positive">Conferma modifiche</string>
     <string name="dialog_neutral">Annulla</string>
@@ -25,12 +29,12 @@
     <string name="move_to_bottom">Sposta in fondo</string>
     <string name="ab_order">Ordine alfabetico</string>
     
-    
     <string name="new_item_hint">Ricorda il latte</string>
     <string name="modify_item_title">Modifica nome elemento</string>
     
     <string name="mtb_icon_description">Sposta in fondo</string>
     <string name="abo_icon_description">Ordine alfabetico</string>
+    <string name="check_icon_description">Fatto o da fare</string>
     
 
 </resources>
