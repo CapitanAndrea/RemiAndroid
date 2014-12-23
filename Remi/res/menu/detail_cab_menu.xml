@@ -5,5 +5,20 @@
 	    android:id="@+id/cab_delete"
 	    android:title="@string/cab_delete_title"
 	    />
-    
+	<item 
+	    android:id="@+id/cab_alarm"
+	    android:title="@string/cab_set_alarm"
+	    />
+    <item
+        android:id="@+id/cab_high_priority"
+        android:title="@string/cab_priority_high"
+        />
+    <item
+        android:id="@+id/cab_medium_priority"
+        android:title="@string/cab_priority_medium"
+        />
+	<item
+        android:id="@+id/cab_low_priority"
+        android:title="@string/cab_priority_low"
+        />
 </menu>

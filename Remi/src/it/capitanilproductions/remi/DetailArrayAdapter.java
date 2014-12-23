@@ -45,6 +45,22 @@ public class DetailArrayAdapter extends ArrayAdapter<RemiItem> {
 		if(selectedItem.check) checkIcon.setImageResource(android.R.drawable.checkbox_on_background);
 		else checkIcon.setImageResource(android.R.drawable.checkbox_off_background); 
 //		entry.setOnClickListener(activity);
+		checkIcon=(ImageView)row.findViewById(R.id.detailPriority);
+		switch (selectedItem.priority){
+		case RemiItem.HIGH_PRIOROTY:{
+			checkIcon.setImageResource(R.drawable.high_priority);
+			break;
+		}
+		case RemiItem.MEDIUM_PRIOROTY:{
+			checkIcon.setImageResource(R.drawable.mid_priority);
+			break;
+		}
+		case RemiItem.LOW_PRIOROTY:{
+			checkIcon.setImageResource(R.drawable.low_priority);
+			break;
+		}
+		default: break;
+		}
 		return row;
 	}
 

@@ -16,6 +16,9 @@ import android.app.DialogFragment;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.AlarmClock;
+import android.provider.CalendarContract;
+import android.provider.CalendarContract.Events;
 import android.support.v4.app.NavUtils;
 import android.util.JsonReader;
 import android.util.JsonWriter;
@@ -36,6 +39,7 @@ import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SearchView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.SearchView.OnQueryTextListener;
@@ -46,6 +50,7 @@ public class DetailActivity extends ListActivity implements OnActionExpandListen
 
 	private static final String ITEMNAME="ItemName";
 	private static final String ITEMCHECK="ItemCheck";
+	private static final String ITEMPRIORITY="ItemPriority";
 	
 	private static String listName;
 	private static boolean listABOrder;
@@ -131,6 +136,7 @@ public class DetailActivity extends ListActivity implements OnActionExpandListen
 	private RemiItem readNextItem(JsonReader reader) {
 		String itemName=null;
 		boolean itemCheck=false;
+		int itemPriority=RemiItem.MEDIUM_PRIOROTY;
 		
 		try{
 			reader.beginObject();
@@ -145,13 +151,16 @@ public class DetailActivity extends ListActivity implements OnActionExpandListen
 					itemCheck=reader.nextBoolean();
 					break;
 				}
+				case ITEMPRIORITY:{
+					itemPriority=reader.nextInt();
+				}
 				}
 			}
 			reader.endObject();
 		}catch(Exception e){
 			return null;
 		}
-		return new RemiItem(itemName, itemCheck);
+		return new RemiItem(itemName, itemCheck, itemPriority);
 	}
 
 @Override
@@ -178,6 +187,7 @@ protected void onPause() {
         	writer.beginObject();
         	writer.name(ITEMNAME).value(currentItem.name);
         	writer.name(ITEMCHECK).value(currentItem.check);
+        	writer.name(ITEMPRIORITY).value(currentItem.priority);
         	writer.endObject();
 //        	Log.d(TAG, "Object succesfully wrote");
             writer.flush(); //needed to flush because the jsonArray closed before any byte was written
@@ -305,7 +315,8 @@ protected void onPause() {
 				return;
 			}
 		}
-		items.add(new RemiItem(name));
+		Spinner spinner=((Spinner)textentryView.findViewById(R.id.prioritySpinner));
+		items.add(new RemiItem(name, spinner.getSelectedItemPosition()));
 		totalCount++;
 		updateView("confirmCreateItem");
 	}
@@ -342,7 +353,7 @@ protected void onPause() {
 
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position,	long id) {
-		Log.d(TAG, "list click");
+		Log.d(TAG, "item click");
 		String clickedItemName=((TextView)view.findViewById(R.id.detailRowEntry)).getText().toString();
 		for(RemiItem currentItem:queriedItems){
 			if(currentItem.name.compareTo(clickedItemName)==0){
@@ -416,6 +427,7 @@ protected void onPause() {
 	  	int size=queriedItems.size();
 	  	if(deletingItems==null) deletingItems=new boolean[size];
 	  	for(int i=0; i<size; i++) deletingItems[i]=false;
+	  	selected=0;
 		return true;
 	}
 
@@ -432,6 +444,42 @@ protected void onPause() {
 			int size=deletingItems.length;
 			for(int i=0; i<size; i++){
 				if(deletingItems[i]) items.remove(queriedItems.get(i));
+			}
+			mode.finish();
+			updateView("ContextualActionBar");
+			return true;
+		}
+		case R.id.cab_alarm:{
+//			start the clock app
+			Intent intent = new Intent(Intent.ACTION_INSERT);
+			intent.setData(CalendarContract.Events.CONTENT_URI);
+			intent.putExtra(Events.TITLE, listName);
+			startActivity(intent);
+			mode.finish();
+			return true;
+		}
+		case R.id.cab_high_priority:{
+			int size=deletingItems.length;
+			for(int i=0; i<size; i++){
+				if(deletingItems[i]) queriedItems.get(i).priority=RemiItem.HIGH_PRIOROTY;
+			}
+			mode.finish();
+			updateView("ContextualActionBar");
+			return true;
+		}
+		case R.id.cab_medium_priority:{
+			int size=deletingItems.length;
+			for(int i=0; i<size; i++){
+				if(deletingItems[i]) queriedItems.get(i).priority=RemiItem.MEDIUM_PRIOROTY;
+			}
+			mode.finish();
+			updateView("ContextualActionBar");
+			return true;
+		}
+		case R.id.cab_low_priority:{
+			int size=deletingItems.length;
+			for(int i=0; i<size; i++){
+				if(deletingItems[i]) queriedItems.get(i).priority=RemiItem.LOW_PRIOROTY;
 			}
 			mode.finish();
 			updateView("ContextualActionBar");
@@ -462,21 +510,13 @@ protected void onPause() {
 	}
 
 //	TODO: find a way to modify an item name, maybe through a button in the detail row that makes the textview editable
-
+// 	TODO: priorità definite dall'utente
 }
 
 
 /** Done list:
-	bugfix: list deletes and modifications now affect the correct list
-	change: items are now stored as json
-	add: now each master view row shows the number of items done and total items for each list
-	change: icons for list options are now BIGGER
-	change: mtb icon is now somewhat similar to other "list-like" android icons
-	add: export data to external storage and import data from external storage
-	change: a little engineering in master activity code concerning loading and storing data
-	change: detail row is now composed by a textView (item name) and and imageView (item check)
-	add: creating a new list now automatically opens it
-	change: long click on an item now starts the contextual action bar, letting the user select groups of items via single click and delete the selected items via a button in the action bar (on top right of the screen)
-	
+	added the possibility to create a calendar event for a list
+	added a priority field on items that influences the items order
+	added a little colored rectangle on the right of each item to show it's priority
 	
  */

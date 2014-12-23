@@ -15,7 +15,11 @@
     <string name="export_data">Esporta dati</string>
     <string name="import_data">Importa dati</string>
     <string name="cab_delete_title">Cancella elementi</string>
+    <string name="cab_set_alarm">Imposta evento su calendario</string>
     <string name="cab_subtitle_selected">Selezionati</string>
+    <string name="cab_priority_high">Setta priorità alta</string>
+    <string name="cab_priority_medium">Setta priorità media</string>
+    <string name="cab_priority_low">Setta priorità bassa</string>
     
     <string name="dialog_positive">Conferma modifiche</string>
     <string name="dialog_neutral">Annulla</string>
@@ -35,6 +39,11 @@
     <string name="mtb_icon_description">Sposta in fondo</string>
     <string name="abo_icon_description">Ordine alfabetico</string>
     <string name="check_icon_description">Fatto o da fare</string>
+    <string name="priority_icon_description">Priorità oggetto</string>
     
-
+	<string-array name="priorities">
+	    <item name="high_priority">Priorità alta</item>
+	    <item name="medium_priority">Priorità media</item>
+	    <item name="low_priority">Priorità bassa</item>
+	</string-array>
 </resources>

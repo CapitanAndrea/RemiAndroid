@@ -9,12 +9,20 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true" />
-
+    
+    <ImageView
+        android:id="@+id/detailPriority"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:contentDescription="@string/priority_icon_description" />
+    
     <ImageView
         android:id="@+id/detailCheck"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
+        android:layout_toLeftOf="@id/detailPriority"
         android:layout_alignParentTop="true"
         android:contentDescription="@string/check_icon_description" />
 

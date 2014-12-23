@@ -14,6 +14,9 @@ public class ItemComparator implements Comparator<RemiItem> {
 
 	@Override
 	public int compare(RemiItem lhs, RemiItem rhs) {
+		if(lhs.priority!=rhs.priority){
+			return lhs.priority<rhs.priority ? -1 : 1;
+		}
 		if(mtb){
 //			move to bottom enabled
 			if(abo){
